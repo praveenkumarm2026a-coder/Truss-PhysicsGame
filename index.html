@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truss – Physics Game | Group 2 Team A</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+
+  <!-- ── NAVBAR ─────────────────────────────────── -->
+  <header class="navbar">
+    <div class="brand">
+      <span class="logo-icon">🏗️</span>
+      <div class="brand-text">
+        <h1>TRUSS PHYSICS</h1>
+        <span class="tagline">Method of Joints · Structural Analysis</span>
+      </div>
+    </div>
+    <div class="header-team">
+      <span class="team-badge">Group 2 · Team A</span>
+      <button id="btn-team-credits" class="btn-icon-header" title="Team Credits">👥</button>
+    </div>
+  </header>
+
+  <!-- ── MAIN LAYOUT ────────────────────────────── -->
+  <main class="main-container">
+
+    <!-- LEFT – Canvas -->
+    <section class="canvas-section">
+      <div class="canvas-header">
+        <div class="level-info">
+          <span id="level-badge" class="badge">Level 1</span>
+          <h2 id="level-title">The Simple Triangle</h2>
+        </div>
+        <div class="hud-stats">
+          <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">0</span></div>
+          <div class="stat-box"><span class="stat-label">TIME</span><span id="timer-val" class="stat-value">0s</span></div>
+        </div>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="trussCanvas"></canvas>
+
+        <!-- Legend strip -->
+        <div class="legend">
+          <span class="leg-item"><span class="leg-dot tension-dot"></span>Tension</span>
+          <span class="leg-item"><span class="leg-dot comp-dot"></span>Compression</span>
+          <span class="leg-item"><span class="leg-dot zero-dot"></span>Zero-force</span>
+          <span class="leg-item"><span class="leg-dot default-dot"></span>Unsolved</span>
+        </div>
+
+        <!-- Overlays -->
+        <div id="failure-overlay" class="overlay-card hidden">
+          <div class="alert-icon">💥</div>
+          <h2>STRUCTURAL COLLAPSE!</h2>
+          <p id="failure-msg">Equilibrium violated.</p>
+          <button id="btn-retry-level" class="btn-primary btn-yellow">🔄 Retry Level</button>
+        </div>
+        <div id="victory-overlay" class="overlay-card hidden">
+          <div class="victory-icon">🎉</div>
+          <h2>LEVEL CLEARED!</h2>
+          <p id="victory-msg">All forces balanced correctly!</p>
+          <button id="btn-next-level" class="btn-primary btn-green">Next Level ➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT – Sidebar -->
+    <aside class="sidebar">
+
+      <!-- Inspector card -->
+      <div class="panel-card">
+        <h3>Member Inspector</h3>
+        <p id="sel-name"  class="member-title">Click any member to inspect</p>
+        <div class="member-meta">
+          <span id="sel-len"  class="meta-chip">Length: —</span>
+          <span id="sel-ang"  class="meta-chip">Angle: —</span>
+        </div>
+
+        <div class="input-group">
+          <label>Force Magnitude <span class="hint-small">(enter 0 for zero-force)</span></label>
+          <input type="number" id="force-input" step="0.01" min="0" placeholder="kN e.g. 5.83">
+        </div>
+
+        <div class="input-group">
+          <label>Stress Type</label>
+          <div class="toggle-switch">
+            <button class="btn-toggle active-t" data-type="Tension">Tension</button>
+            <button class="btn-toggle"          data-type="Compression">Compression</button>
+          </div>
+        </div>
+
+        <button id="btn-save-member" class="btn-action btn-cyan">Save Member Force</button>
+      </div>
+
+      <!-- Actions card -->
+      <div class="panel-card action-card">
+        <button id="btn-submit-truss" class="btn-submit">⚡ TEST &amp; SUBMIT TRUSS</button>
+
+        <!-- Icon row: FBD | Calc | Hint | Solution | Team -->
+        <div class="icon-row">
+          <button id="btn-fbd"  class="btn-icon" title="Free Body Diagram">📐<span>FBD</span></button>
+          <button id="btn-calc" class="btn-icon" title="Calculator">🧮<span>Calc</span></button>
+          <button id="btn-hint" class="btn-icon" title="Hint">💡<span>Hint</span></button>
+          <button id="btn-sol"  class="btn-icon" title="Solution">📋<span>Solution</span></button>
+          <button id="btn-team-icon" class="btn-icon" title="Team Credits">👥<span>Team</span></button>
+        </div>
+        <button id="btn-guide" class="btn-secondary btn-full">📖 Theory Guide</button>
+      </div>
+
+      <!-- Hint reveal panel -->
+      <div id="hint-panel" class="panel-card hint-card hidden">
+        <div class="hint-header">💡 Hint</div>
+        <p id="hint-text"></p>
+      </div>
+
+      <!-- Solution reveal panel -->
+      <div id="sol-panel" class="panel-card sol-card hidden">
+        <div class="sol-header">📋 Step-by-Step Solution</div>
+        <div id="sol-text" class="sol-body"></div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- ═══════════  MODALS  ═══════════ -->
+
+  <!-- Team Credits -->
+  <div id="modal-team" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <button class="modal-close" data-close="modal-team">✕</button>
+      <div class="modal-header">
+        <span class="badge yellow">GROUP 2 · TEAM A</span>
+        <h2>Project Creators &amp; Developers</h2>
+      </div>
+      <div class="team-grid">
+        <div class="team-card"><span class="num">1</span><div class="t-info"><strong>Sriman K V</strong><code>26BMV1003</code></div></div>
+        <div class="team-card"><span class="num">2</span><div class="t-info"><strong>Pragespathi V S</strong><code>26BMV1006</code></div></div>
+        <div class="team-card"><span class="num">3</span><div class="t-info"><strong>TANWIN V R</strong><code>26BMV1007</code></div></div>
+        <div class="team-card"><span class="num">4</span><div class="t-info"><strong>Praveen Kumar M</strong><code>26BMV1023</code></div></div>
+        <div class="team-card"><span class="num">5</span><div class="t-info"><strong>P. Senthil Velan</strong><code>26BMV1025</code></div></div>
+        <div class="team-card"><span class="num">6</span><div class="t-info"><strong>Abhinav</strong><code>26BMV1024</code></div></div>
+        <div class="team-card"><span class="num">7</span><div class="t-info"><strong>Veera Sai Ruthwik Karukonda</strong><code>26BMV1004</code></div></div>
+        <div class="team-card"><span class="num">8</span><div class="t-info"><strong>Nalla Sai Venkat Sesidher</strong><code>26BMV1008</code></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FBD Modal -->
+  <div id="modal-fbd" class="modal-backdrop hidden">
+    <div class="modal-content large">
+      <button class="modal-close" data-close="modal-fbd">✕</button>
+      <h2>Free Body Diagram — Joint Equilibrium</h2>
+      <div id="fbd-body-content" class="fbd-container"></div>
+    </div>
+  </div>
+
+  <!-- Calculator Modal -->
+  <div id="modal-calc" class="modal-backdrop hidden">
+    <div class="modal-content calc-modal">
+      <button class="modal-close" data-close="modal-calc">✕</button>
+      <h2>Engineering Calculator</h2>
+      <input type="text" id="calc-display" readonly value="0">
+      <div class="calc-grid">
+        <button class="calc-btn" data-val="sin(">sin</button>
+        <button class="calc-btn" data-val="cos(">cos</button>
+        <button class="calc-btn" data-val="tan(">tan</button>
+        <button class="calc-btn btn-red" data-val="C">C</button>
+        <button class="calc-btn" data-val="sqrt(">√</button>
+        <button class="calc-btn" data-val="(">(</button>
+        <button class="calc-btn" data-val=")">)</button>
+        <button class="calc-btn" data-val="/">/</button>
+        <button class="calc-btn" data-val="7">7</button>
+        <button class="calc-btn" data-val="8">8</button>
+        <button class="calc-btn" data-val="9">9</button>
+        <button class="calc-btn" data-val="*">×</button>
+        <button class="calc-btn" data-val="4">4</button>
+        <button class="calc-btn" data-val="5">5</button>
+        <button class="calc-btn" data-val="6">6</button>
+        <button class="calc-btn" data-val="-">−</button>
+        <button class="calc-btn" data-val="1">1</button>
+        <button class="calc-btn" data-val="2">2</button>
+        <button class="calc-btn" data-val="3">3</button>
+        <button class="calc-btn" data-val="+">+</button>
+        <button class="calc-btn" data-val="0">0</button>
+        <button class="calc-btn" data-val=".">.</button>
+        <button class="calc-btn btn-green span-2" data-val="=">=</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Theory Guide Modal -->
+  <div id="modal-guide" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <button class="modal-close" data-close="modal-guide">✕</button>
+      <h2>Method of Joints — Theory Guide</h2>
+      <div class="guide-text">
+        <h3>1. Truss Assumptions</h3>
+        <p>Members are two-force members connected at frictionless pins. Loads act only at joints.</p>
+        <h3>2. Support Reactions</h3>
+        <p><strong>Pin:</strong> resists both Rx &amp; Ry. &nbsp;<strong>Roller:</strong> resists only Ry (vertical).</p>
+        <h3>3. Equilibrium at each Joint</h3>
+        <p><code>Σ Fx = 0</code> and <code>Σ Fy = 0</code> must hold simultaneously.</p>
+        <h3>4. Sign Convention</h3>
+        <p><strong>Tension (T):</strong> member pulls away from joint (+).<br>
+           <strong>Compression (C):</strong> member pushes into joint (−).<br>
+           <strong>Zero-force:</strong> enter <code>0</code> in the magnitude field.</p>
+        <h3>5. Zero-Force Member Rules</h3>
+        <p>Rule 1: Two non-collinear members at an unloaded joint → both zero.<br>
+           Rule 2: Three members at unloaded joint, two collinear → third is zero.</p>
+        <h3>6. Colour Key</h3>
+        <p>🟥 Red = Tension &nbsp;|&nbsp; 🔵 Blue = Compression &nbsp;|&nbsp; 🟡 Gold = Zero-force &nbsp;|&nbsp; ⬜ White = Unsolved</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="physics.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
